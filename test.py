@@ -5,7 +5,7 @@ from rendering.camera import Camera
 pygame.init()
 
 # Window Setup
-canvas: pygame.Surface = pygame.display.set_mode((1920, 1080))
+canvas: pygame.Surface = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("My Board")
 
 # Simulation Setup

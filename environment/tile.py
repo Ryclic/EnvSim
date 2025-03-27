@@ -15,11 +15,11 @@ class Tile:
         self.y = y
         self.color = starting_color
 
-    def get_global_x(self) -> int:
-        return self.x + self.chunk.x * self.chunk.CHUNK_SIZE
+    def get_world_x(self) -> int:
+        return (self.x + self.chunk.x * self.chunk.CHUNK_SIZE) * self.TILE_WIDTH
 
-    def get_global_y(self) -> int:
-        return self.y + self.chunk.y * self.chunk.CHUNK_SIZE
+    def get_world_y(self) -> int:
+        return (self.y + self.chunk.y * self.chunk.CHUNK_SIZE) * self.TILE_WIDTH
 
     def tick(self, delta_time: float):  # TODO
         pass

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from typing import TYPE_CHECKING
 import pygame
 from environment.tile import Tile
@@ -23,9 +23,18 @@ class Chunk:
                 self.tiles[y][x].tick(delta_time)
 
     def render(self, camera: "Camera"):
+        if not camera.is_chunk_in_camera(self):
+            return # Prevent rendering chunks outside the camera FOV
+
         for y in range(Chunk.CHUNK_SIZE):
             for x in range(Chunk.CHUNK_SIZE):
                 self.tiles[y][x].render(camera)
+
+    def get_world_x(self) -> int:
+        return self.x * self.CHUNK_SIZE * Tile.TILE_WIDTH
+
+    def get_world_y(self) -> int:
+        return self.y * self.CHUNK_SIZE * Tile.TILE_WIDTH
 
     def initialize_tiles(self) -> "List[List[Tile]]":
         """
