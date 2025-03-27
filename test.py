@@ -10,7 +10,7 @@ pygame.display.set_caption("My Board")
 
 # Simulation Setup
 exit: bool = False
-world: World = World(8)
+world: World = World(16)
 main_camera: Camera = Camera(canvas)
 clock: pygame.time.Clock = pygame.time.Clock()
 controls: dict[str, bool] = {

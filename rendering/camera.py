@@ -63,6 +63,24 @@ class Camera:
             ),
         )
 
+    def render_tile_on_chunk_debug(self, tile: "Tile", chunk: "Chunk"):
+        """
+        Blits debug tile on chunk.
+        """
+        pygame.draw.rect(
+            chunk.canvas,
+            tile.color,
+            pygame.Rect(
+                tile.x * tile.TILE_WIDTH,
+                tile.y * tile.TILE_WIDTH,
+                tile.TILE_WIDTH,
+                tile.TILE_WIDTH,
+            ),
+        )
+    
+    def render_chunk(self, chunk: "Chunk"):
+        pygame.Surface.blit(self.canvas, chunk.canvas, (chunk.get_world_x(), chunk.get_world_y()))
+
     def get_camera_world_position(self) -> Tuple[int]:
         """
         Gets the top-left point of the screen in world coorindates.
