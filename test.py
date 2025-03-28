@@ -6,7 +6,7 @@ pygame.init()
 
 # Window Setup
 canvas: pygame.Surface = pygame.display.set_mode((500, 500))
-pygame.display.set_caption("My Board")
+pygame.display.set_caption("EnvSim")
 
 # Simulation Setup
 exit: bool = False
