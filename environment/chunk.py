@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from rendering.camera import Camera
 
 
+
 class Chunk:
     CHUNK_SIZE: int = 8
 
@@ -17,7 +18,7 @@ class Chunk:
         self.x = x
         self.y = y
         # Change to initialize_debug_tiles for debug tilemap
-        self.tiles = self.initialize_debug_tiles()
+        self.tiles = self.initialize_random_tiles()
 
     def tick(self, delta_time: float):
         for y in range(Chunk.CHUNK_SIZE):

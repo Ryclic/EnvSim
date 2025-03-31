@@ -6,8 +6,8 @@ class TileLookup:
         "grass": {
             "COLOR": pygame.Color(0, 255, 0)
         },
-        "dirt": {
-            "COLOR": pygame.Color(150, 75, 0)
+        "stone": {
+            "COLOR": pygame.Color(128, 128, 128)
         },
         "water": {
             "COLOR": pygame.Color(0, 0, 255)
