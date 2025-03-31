@@ -2,6 +2,7 @@ from typing import List, Tuple
 from typing import TYPE_CHECKING
 import pygame
 from environment.tile import Tile
+from environment.generation import Generation
 
 if TYPE_CHECKING:
     from environment.world import World
@@ -15,7 +16,8 @@ class Chunk:
         self.world = world
         self.x = x
         self.y = y
-        self.tiles = self.initialize_tiles()
+        # Change to initialize_debug_tiles for debug tilemap
+        self.tiles = self.initialize_debug_tiles()
 
     def tick(self, delta_time: float):
         for y in range(Chunk.CHUNK_SIZE):
@@ -36,7 +38,7 @@ class Chunk:
     def get_world_y(self) -> int:
         return self.y * self.CHUNK_SIZE * Tile.TILE_WIDTH
 
-    def initialize_tiles(self) -> "List[List[Tile]]":
+    def initialize_debug_tiles(self) -> "List[List[Tile]]":
         """
         Initializes grid of tiles.
         """
@@ -56,3 +58,5 @@ class Chunk:
             ]
             for y in range(Chunk.CHUNK_SIZE)
         ]
+    def initialize_random_tiles(self) -> "List[List[Tile]]":
+        return Generation.generate_random_chunk()
