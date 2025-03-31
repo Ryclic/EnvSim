@@ -59,4 +59,4 @@ class Chunk:
             for y in range(Chunk.CHUNK_SIZE)
         ]
     def initialize_random_tiles(self) -> "List[List[Tile]]":
-        return Generation.generate_random_chunk()
+        return Generation.generate_random_chunk(self)
