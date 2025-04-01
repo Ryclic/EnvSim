@@ -1,14 +1,11 @@
-from typing import List, Tuple
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 import pygame
-from environment.tile import Tile
 from environment.generation import Generation
+from environment.tile import Tile
 
 if TYPE_CHECKING:
     from environment.world import World
     from rendering.camera import Camera
-
-
 
 class Chunk:
     CHUNK_SIZE: int = 8
