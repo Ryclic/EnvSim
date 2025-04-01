@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from environment.world import World
     from rendering.camera import Camera
 
+
 class Chunk:
     CHUNK_SIZE: int = 8
 
@@ -24,7 +25,7 @@ class Chunk:
 
     def render(self, camera: "Camera"):
         if not camera.is_chunk_in_camera(self):
-            return # Prevent rendering chunks outside the camera FOV
+            return  # Prevent rendering chunks outside the camera FOV
 
         for y in range(Chunk.CHUNK_SIZE):
             for x in range(Chunk.CHUNK_SIZE):
@@ -56,5 +57,6 @@ class Chunk:
             ]
             for y in range(Chunk.CHUNK_SIZE)
         ]
+
     def initialize_random_tiles(self) -> "List[List[Tile]]":
         return Generation.generate_random_chunk(self)
