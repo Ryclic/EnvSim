@@ -1,6 +1,10 @@
+import math
+import random
+import numpy
 from typing import List
 from typing import TYPE_CHECKING
 from environment.chunk import Chunk
+from environment.generation import Generation
 
 if TYPE_CHECKING:
     from rendering.camera import Camera
@@ -9,6 +13,9 @@ if TYPE_CHECKING:
 class World:
     def __init__(self, world_size: int):
         self.world_size = world_size
+        self.world_noise = Generation.get_noise(12, random.randint(0, 100))
+        self.world_normal = Generation.get_normal(self.world_noise, self.world_size * Chunk.CHUNK_SIZE, self.world_size * Chunk.CHUNK_SIZE)
+        self.sun_vector = numpy.array([-math.sqrt(3) / 3, math.sqrt(3) / 3, -math.sqrt(3) / 3])
         # For some reason the complier doesn't recognize this variable as a 2d list
         self.chunks: List[List[Chunk]] = self.initialize_chunks(world_size)
 

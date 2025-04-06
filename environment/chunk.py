@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class Chunk:
-    CHUNK_SIZE: int = 8
+    CHUNK_SIZE: int = 16
 
     def __init__(self, world: "World", x: int, y: int):
         self.world = world
@@ -59,4 +59,4 @@ class Chunk:
         ]
 
     def initialize_random_tiles(self) -> "List[List[Tile]]":
-        return Generation.generate_random_chunk(self)
+        return Generation.generate_random_chunk(self, self.world.world_noise, self.world.world_normal, self.world.sun_vector)
