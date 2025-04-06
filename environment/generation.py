@@ -84,9 +84,9 @@ class Generation:
                 ]
 
                 color = TileLookup.tiles["water"]["BASE_COLOR"]
-                if noise_value < -0.1:
+                if noise_value < -0.2:
                     color = TileLookup.tiles["water"]["BASE_COLOR"]
-                elif noise_value < -0.05:
+                elif noise_value < -0.15:
                     color = TileLookup.tiles["sand"]["BASE_COLOR"]
                 elif noise_value < 0.3:
                     color = TileLookup.tiles["grass"]["BASE_COLOR"]
