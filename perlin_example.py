@@ -3,7 +3,6 @@
 
 import pygame
 import random
-import noise
 
 # Initialize Pygame
 pygame.init()
