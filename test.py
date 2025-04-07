@@ -5,7 +5,7 @@ from rendering.camera import Camera
 pygame.init()
 
 # Window Setup
-canvas: pygame.Surface = pygame.display.set_mode((500, 500))
+canvas: pygame.Surface = pygame.display.set_mode((1920, 1080))
 pygame.display.set_caption("EnvSim")
 
 # Simulation Setup
