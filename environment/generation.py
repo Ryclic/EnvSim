@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Generation:
-    def get_noise(
+    def get_height_map(
         height: int,
         width: int,
         octaves: float,
@@ -20,8 +20,8 @@ class Generation:
         lacunarity: float,
         persistance: float,
     ):
-        layers = [PerlinNoise(octaves=8, seed=seed) for i in range(octaves)]
-        noise = numpy.zeros((height, width))
+        layers = [PerlinNoise(octaves=4, seed=seed) for i in range(octaves)]
+        height_map = numpy.zeros((height, width))
 
         for y in range(height):
             for x in range(width):
@@ -38,12 +38,12 @@ class Generation:
                     frequency *= lacunarity
                     amplitude *= persistance
 
-                noise[y][x] = noise_value
+                height_map[y][x] = noise_value
 
-        return noise
+        return height_map
 
-    def get_normal(
-        noise: numpy.ndarray, width: int, height: int, strength: float = 1.0
+    def get_normal_map(
+        height_map: numpy.ndarray, width: int, height: int, strength: float = 1.0
     ):
         normal_map = numpy.zeros((height, width, 3))
 
@@ -61,8 +61,8 @@ class Generation:
                 elif y == height - 1:
                     y2 = y
 
-                dzdx = (noise[y][x2] - noise[y][x1]) * strength
-                dzdy = (noise[y2][x] - noise[y1][x]) * strength
+                dzdx = (height_map[x2, y] - height_map[x1, y]) * strength
+                dzdy = (height_map[x, y2] - height_map[x, y1]) * strength
 
                 v1 = numpy.array([1, 0, dzdx])
                 v2 = numpy.array([0, 1, dzdy])
@@ -95,53 +95,73 @@ class Generation:
             )
         )
 
+    def get_steepness_map(normal_map):
+        """
+        Returns steepness map from a normal map.
+        """
+        return numpy.arccos(
+            numpy.clip(
+                numpy.sum(normal_map * numpy.array([0, 0, 1]).reshape(1, 1, 3), axis=2),
+                -1.0,
+                1.0,
+            )
+        )
+
     def generate_random_chunk(
-        self: "Chunk", noise: numpy.ndarray, normal: numpy.ndarray, sun: numpy.ndarray
+        self: "Chunk",
+        height_map: numpy.ndarray,
+        normal_map: numpy.ndarray,
+        steepness_map: numpy.ndarray,
+        light_vector: numpy.ndarray,
     ):
         """
         Initializes Perlin generated grid of tiles.
         """
         tiles = []
-        for x in range(self.CHUNK_SIZE):
+        for x in range(self.SIZE):
             row = []
-            for y in range(self.CHUNK_SIZE):
-                noise_value = noise[y + self.y * self.CHUNK_SIZE][x + self.x * self.CHUNK_SIZE]
-
-                normal_value = normal[y + self.y * self.CHUNK_SIZE][
-                    x + self.x * self.CHUNK_SIZE
-                ]
-                steepness = Generation.angle_between(
-                    normal_value, numpy.array([0, 0, 1])
-                )
+            for y in range(self.SIZE):
+                world_x = x + self.x * self.SIZE
+                world_y = y + self.y * self.SIZE
+                
+                height_value = height_map[world_x, world_y]
+                normal_value = normal_map[world_x, world_y]
+                steepness_value = steepness_map[world_x, world_y]
 
                 color = TileLookup.tiles["water"]["BASE_COLOR"]
-                if noise_value < -0.28:
+                if height_value < -0.28:
                     color = TileLookup.tiles["water"]["BASE_COLOR"]
-                elif noise_value < -0.2:
+                elif height_value < -0.2:
                     color = TileLookup.tiles["shallow_water"]["BASE_COLOR"]
-                elif steepness > 0.1:
+                elif steepness_value > 0.1:
                     color = TileLookup.tiles["stone"]["BASE_COLOR"]
-                elif noise_value > 0.4:
+                elif height_value > 0.4:
                     color = TileLookup.tiles["snow"]["BASE_COLOR"]
-                elif noise_value > 0.35:
+                elif height_value > 0.35:
                     color = TileLookup.tiles["stone"]["BASE_COLOR"]
-                elif noise_value < -0.15:
+                elif height_value < -0.15:
                     color = TileLookup.tiles["sand"]["BASE_COLOR"]
-                elif steepness > 0.08:
+                elif steepness_value > 0.08:
                     color = TileLookup.tiles["dirt"]["BASE_COLOR"]
                 else:
                     color = TileLookup.tiles["grass"]["BASE_COLOR"]
 
-                if color != TileLookup.tiles["water"]["BASE_COLOR"] and color != TileLookup.tiles["shallow_water"]["BASE_COLOR"]:
+                # Water doesn't get shadows cause its flat.
+                if (
+                    color != TileLookup.tiles["water"]["BASE_COLOR"]
+                    and color != TileLookup.tiles["shallow_water"]["BASE_COLOR"]
+                ):
                     color = Generation.brighten_color(
-                        color, max(0.2, (-numpy.dot(normal_value, sun) - 0.35) * 4)
+                        color,
+                        max(0.2, (-numpy.dot(normal_value, light_vector) - 0.35) * 4),
                     )
 
+                # Shading based on height.
                 color = Generation.brighten_color(
-                    color, max(0.2, (1 + noise_value * 0.6))
+                    color, max(0.2, (1 + height_value * 0.6))
                 )
 
-                # Normal Map
+                # Normal map coloring if needed.
                 r, g, b = [int(i * 255) for i in ((normal_value + 1) / 2).clip(0, 1)]
                 normal_color = pygame.Color(r, g, b)
 

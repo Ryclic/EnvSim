@@ -3,6 +3,7 @@ from environment.world import World
 from rendering.camera import Camera
 
 pygame.init()
+pygame.surfarray.use_arraytype('numpy')
 
 # Window Setup
 canvas: pygame.Surface = pygame.display.set_mode((1920, 1080))
@@ -10,7 +11,7 @@ pygame.display.set_caption("EnvSim")
 
 # Simulation Setup
 exit: bool = False
-world: World = World(16)
+world: World = World(32)
 main_camera: Camera = Camera(canvas)
 clock: pygame.time.Clock = pygame.time.Clock()
 controls: dict[str, bool] = {

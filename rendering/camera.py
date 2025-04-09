@@ -1,17 +1,22 @@
-from typing import Tuple
+import math
+from typing import Tuple, TYPE_CHECKING
 import pygame
-from environment.chunk import Chunk
 from environment.tile import Tile
+
+if TYPE_CHECKING:
+    from environment.world import World
+    from environment.chunk import Chunk
 
 
 class Camera:
     INITIAL_PAN_SPEED = 300
     INITIAL_ZOOM_SPEED = 0.5
     SPEED_FACTOR = 2
-    RENDER_BUFFER = 10 # Distance outside the camera FOV such that chunks are still rendered
+    # Distance outside the camera FOV such that chunks are still rendered
+    RENDER_BUFFER = 10
 
-    def __init__(self, canvas: pygame.Surface):
-        self.canvas = canvas
+    def __init__(self, screen: pygame.Surface):
+        self.screen = screen
         self.camera_x = 0
         self.camera_y = 0
         self.zoom = 1
@@ -48,61 +53,102 @@ class Camera:
 
     def render_tile_debug(self, tile: "Tile"):
         """
-        Renders tile as a square relative to camera with color based on coordinates relative to chunk and world.
+        (OBSOLETE) Renders tile as a square relative to camera with color based on coordinates relative to chunk and world.
         """
         pygame.draw.rect(
-            self.canvas,
+            self.screen,
             tile.color,
             pygame.Rect(
                 (tile.get_world_x() - self.camera_x) * self.zoom
-                + self.canvas.get_width() / 2,
+                + self.screen.get_width() / 2,
                 (tile.get_world_y() - self.camera_y) * self.zoom
-                + self.canvas.get_height() / 2,
-                tile.TILE_WIDTH * self.zoom + 1,
-                tile.TILE_WIDTH * self.zoom + 1,
+                + self.screen.get_height() / 2,
+                self.zoom + 1,
+                self.zoom + 1,
             ),
         )
 
-    def render_tile_on_chunk_debug(self, tile: "Tile", chunk: "Chunk"):
+    def fast_render_world(self, world: "World"):
         """
-        Blits debug tile on chunk.
+        A work-in-progress way to render the world selectively.
         """
-        pygame.draw.rect(
-            chunk.canvas,
-            tile.color,
-            pygame.Rect(
-                tile.x * tile.TILE_WIDTH,
-                tile.y * tile.TILE_WIDTH,
-                tile.TILE_WIDTH,
-                tile.TILE_WIDTH,
+        viewable_world_rect: pygame.Rect = self.get_world_rect()
+        prezoom_surf = pygame.Surface(viewable_world_rect.size)
+        overlap_rect = viewable_world_rect.clip(world.surf.get_rect())
+
+        if overlap_rect.width > 0 and overlap_rect.height > 0:
+            prezoom_surf.blit(
+                world.surf,
+                (
+                    overlap_rect.x - viewable_world_rect.x,
+                    overlap_rect.y - viewable_world_rect.y,
+                ),
+                area=overlap_rect,
+            )
+
+        world_scaled_surf = pygame.transform.scale(prezoom_surf, (prezoom_surf.get_width() * self.zoom, prezoom_surf.get_height() * self.zoom))
+
+        self.screen.blit(
+            world_scaled_surf,
+            (
+                (viewable_world_rect.center[0] - self.camera_x) * self.zoom,
+                (viewable_world_rect.center[1] - self.camera_y) * self.zoom,
             ),
         )
-    
-    def render_chunk(self, chunk: "Chunk"):
-        pygame.Surface.blit(self.canvas, chunk.canvas, (chunk.get_world_x(), chunk.get_world_y()))
 
-    def get_camera_world_position(self) -> Tuple[int]:
-        """
-        Gets the top-left point of the screen in world coorindates.
-        """
-        world_x: int = round((-self.canvas.get_width() / 2) / self.zoom + self.camera_x)
-        world_y: int = round(
-            (-self.canvas.get_height() / 2) / self.zoom + self.camera_y
+    def render_world(self, world: "World"):
+        world_scaled_surf = pygame.transform.scale(world.surf, (world.surf.get_width() * self.zoom, world.surf.get_height() * self.zoom))
+
+        self.screen.blit(
+            world_scaled_surf,
+            (
+                self.screen.get_width() / 2 - self.camera_x * self.zoom,
+                self.screen.get_height() / 2 - self.camera_y * self.zoom,
+            ),
         )
-        return (world_x, world_y)
 
-    def is_chunk_in_camera(self, chunk: Chunk) -> bool:
-        screen_world_dimensions = self.get_camera_world_position()
+    def get_world_rect(self) -> pygame.rect:
+        """
+        Gets the rect of the screen in world coorindates.
+        """
+        world_x = (-self.screen.get_width() / 2) / self.zoom + self.camera_x
+        world_y = (-self.screen.get_height() / 2) / self.zoom + self.camera_y
+
+        return pygame.Rect(
+            math.floor(world_x),
+            math.floor(world_y),
+            math.ceil(self.screen.get_width() / self.zoom + world_x) - math.floor(world_x),
+            math.ceil(self.screen.get_height() / self.zoom + world_y) - math.floor(world_y),
+        )
+
+    def get_world_tuple(self) -> Tuple[float]:
+        """
+        Gets a tuple of the screen in world coorindates.
+        """
+        world_x = (-self.screen.get_width() / 2) / self.zoom + self.camera_x
+        world_y = (-self.screen.get_height() / 2) / self.zoom + self.camera_y
 
         return (
-            screen_world_dimensions[0] - self.RENDER_BUFFER < chunk.get_world_x() + Chunk.CHUNK_SIZE * Tile.TILE_WIDTH
+            world_x,
+            world_y,
+            self.screen.get_width() / self.zoom,
+            self.screen.get_height() / self.zoom,
+        )
+
+    def is_chunk_in_camera(self, chunk: "Chunk") -> bool:
+        screen_world_dimensions = self.get_world_rect()
+
+        return (
+            screen_world_dimensions.x - self.RENDER_BUFFER
+            < chunk.get_world_x() + chunk.SIZE
             and chunk.get_world_x()
-            < screen_world_dimensions[0]
-            + self.canvas.get_width() / self.zoom
+            < screen_world_dimensions.x
+            + self.screen.get_width() / self.zoom
             + self.RENDER_BUFFER
-            and screen_world_dimensions[1] - self.RENDER_BUFFER < chunk.get_world_y() + Chunk.CHUNK_SIZE * Tile.TILE_WIDTH
+            and screen_world_dimensions.y - self.RENDER_BUFFER
+            < chunk.get_world_y() + chunk.SIZE
             and chunk.get_world_y()
-            < screen_world_dimensions[1]
-            + self.canvas.get_height() / self.zoom
+            < screen_world_dimensions.y
+            + self.screen.get_height() / self.zoom
             + self.RENDER_BUFFER
         )
