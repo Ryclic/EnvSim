@@ -21,6 +21,9 @@ class Camera:
         self.camera_y = 0
         self.zoom = 1
 
+        self.last_cached_zoom = 1
+        self.cached_scaled_surf = None
+
         self.pan_speed = self.INITIAL_PAN_SPEED
         self.zoom_speed = self.INITIAL_ZOOM_SPEED
 
@@ -97,10 +100,12 @@ class Camera:
         )
 
     def render_world(self, world: "World"):
-        world_scaled_surf = pygame.transform.scale(world.surf, (world.surf.get_width() * self.zoom, world.surf.get_height() * self.zoom))
+        if(self.zoom != self.last_cached_zoom or self.cached_scaled_surf is None):
+            self.cached_scaled_surf = pygame.transform.scale(world.surf, (world.surf.get_width() * self.zoom, world.surf.get_height() * self.zoom))
+            self.last_cached_zoom = self.zoom
 
         self.screen.blit(
-            world_scaled_surf,
+            self.cached_scaled_surf,
             (
                 self.screen.get_width() / 2 - self.camera_x * self.zoom,
                 self.screen.get_height() / 2 - self.camera_y * self.zoom,

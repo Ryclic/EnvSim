@@ -47,3 +47,6 @@ while not exit:
     main_camera.tick(delta_time, controls)
     world.render(main_camera)
     pygame.display.flip()
+
+    # Debug FPS
+    print(int(clock.get_fps()))
