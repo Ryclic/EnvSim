@@ -1,6 +1,7 @@
 import pygame
 from environment.world import World
 from rendering.camera import Camera
+from agent.animal import Animal
 
 pygame.init()
 pygame.surfarray.use_arraytype('numpy')
@@ -24,6 +25,7 @@ controls: dict[str, bool] = {
     "speed": False,
 }
 FPS: int = 60
+# test_animal: Animal = Animal(256, 256)
 
 while not exit:
     for event in pygame.event.get():

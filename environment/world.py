@@ -41,7 +41,7 @@ class World:
             for x in range(self.size_chunks):
                 self.chunks[y][x].tick(delta_time)
 
-    def render(self, camera: "Camera"):  # TODO: Make render visible chunks only.
+    def render(self, camera: "Camera"):
         """
         Renders all chunks. Kept separate from tick() for it to run on separate clock.
         """
@@ -53,7 +53,7 @@ class World:
 
     def initialize_chunks(self, world_size: int) -> "List[List[Chunk]]":
         """
-        Returns grid of chunks with dimensions world_size by world_size in chunks.
+        Returns grid of random Perlin noise generated chunks with dimensions world_size by world_size in chunks.
         """
         return [
             [Chunk(self, x, y) for x in range(world_size)] for y in range(world_size)

@@ -74,7 +74,7 @@ class Camera:
 
     def fast_render_world(self, world: "World"):
         """
-        A work-in-progress way to render the world selectively.
+        (DEPRECATED) A work-in-progress way to render the world selectively.
         """
         viewable_world_rect: pygame.Rect = self.get_world_rect()
         prezoom_surf = pygame.Surface(viewable_world_rect.size)
