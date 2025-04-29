@@ -4,7 +4,7 @@ import pygame
 class TileLookup:
     tiles = {
         "grass": {
-            "BASE_COLOR": pygame.Color(34, 143, 70)
+            "BASE_COLOR": pygame.Color(83, 115, 56)
         },
         "stone": {
             "BASE_COLOR": pygame.Color(69, 64, 59)
