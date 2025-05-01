@@ -106,34 +106,30 @@ class Camera:
         """
         viewable_world_rect: pygame.Rect = self.get_world_rect()
         
-        # Caching, recaculation if zoom change, no cache, or camera pan
-        if (self.zoom != self.last_cached_zoom or self.cached_scaled_surf is None or 
-            self.cached_view_rect != viewable_world_rect):
+        visible_surf = pygame.Surface(viewable_world_rect.size)
+        overlap_rect = viewable_world_rect.clip(world.surf.get_rect())
+        
+        if overlap_rect.width > 0 and overlap_rect.height > 0:
+            # Only blit the visible portion
+            visible_surf.blit(
+                world.surf,
+                (
+                    overlap_rect.x - viewable_world_rect.x,
+                    overlap_rect.y - viewable_world_rect.y,
+                ),
+                area=overlap_rect,
+            )
             
-            visible_surf = pygame.Surface(viewable_world_rect.size)
-            overlap_rect = viewable_world_rect.clip(world.surf.get_rect())
-            
-            if overlap_rect.width > 0 and overlap_rect.height > 0:
-                # Only blit the visible portion
-                visible_surf.blit(
-                    world.surf,
-                    (
-                        overlap_rect.x - viewable_world_rect.x,
-                        overlap_rect.y - viewable_world_rect.y,
-                    ),
-                    area=overlap_rect,
+            # Scale visible portion
+            self.cached_scaled_surf = pygame.transform.scale(
+                visible_surf,
+                (
+                    int(visible_surf.get_width() * self.zoom),
+                    int(visible_surf.get_height() * self.zoom)
                 )
-                
-                # Scale visible portion
-                self.cached_scaled_surf = pygame.transform.scale(
-                    visible_surf,
-                    (
-                        int(visible_surf.get_width() * self.zoom),
-                        int(visible_surf.get_height() * self.zoom)
-                    )
-                )
-                self.last_cached_zoom = self.zoom
-                self.cached_view_rect = viewable_world_rect
+            )
+            self.last_cached_zoom = self.zoom
+            self.cached_view_rect = viewable_world_rect
         
         screen_center_x = self.screen.get_width() / 2
         screen_center_y = self.screen.get_height() / 2

@@ -7,11 +7,12 @@ if TYPE_CHECKING:
 
 
 class Tile:
-    def __init__(self, chunk: "Chunk", x: int, y: int, starting_color: pygame.Color):
+    def __init__(self, chunk: "Chunk", x: int, y: int, starting_color: pygame.Color, material):
         self.chunk = chunk
         self.x = x
         self.y = y
         self.color = starting_color
+        self.material = material
         self.update()
 
     def get_world_x(self) -> int:

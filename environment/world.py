@@ -6,9 +6,10 @@ from typing import List
 from typing import TYPE_CHECKING
 from environment.chunk import Chunk
 from environment.generation import Generation
+from environment.animal import Animal
 
 if TYPE_CHECKING:
-    from rendering.camera import Camera
+    from environment.camera import Camera
 
 
 class World:
@@ -50,6 +51,14 @@ class World:
                 self.chunks[y][x].render(camera)
         
         camera.render_world(self)
+    
+    def get_tile(self, world_x, world_y):
+        chunk_x = world_x // Chunk.SIZE
+        chunk_y = world_y // Chunk.SIZE
+        tile_x = world_x - chunk_x * Chunk.SIZE
+        tile_y = world_y - chunk_y * Chunk.SIZE
+        
+        return self.chunks[chunk_y][chunk_x].tiles[tile_y][tile_x]
 
     def initialize_chunks(self, world_size: int) -> "List[List[Chunk]]":
         """

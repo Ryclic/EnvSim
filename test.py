@@ -12,7 +12,7 @@ pygame.display.set_caption("EnvSim")
 
 # Simulation Setup
 exit: bool = False
-world: World = World(32)
+world: World = World(8)
 main_camera: Camera = Camera(canvas)
 clock: pygame.time.Clock = pygame.time.Clock()
 controls: dict[str, bool] = {
@@ -51,4 +51,4 @@ while not exit:
     pygame.display.flip()
 
     # Debug FPS
-    print(int(clock.get_fps()))
+    #print(int(clock.get_fps()))

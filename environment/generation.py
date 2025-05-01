@@ -118,9 +118,9 @@ class Generation:
         Initializes Perlin generated grid of tiles.
         """
         tiles = []
-        for x in range(self.SIZE):
+        for y in range(self.SIZE):
             row = []
-            for y in range(self.SIZE):
+            for x in range(self.SIZE):
                 world_x = x + self.x * self.SIZE
                 world_y = y + self.y * self.SIZE
                 
@@ -128,23 +128,24 @@ class Generation:
                 normal_value = normal_map[world_x, world_y]
                 steepness_value = steepness_map[world_x, world_y]
 
-                color = TileLookup.tiles["water"]["BASE_COLOR"]
+                material = ""
                 if height_value < -0.28:
-                    color = TileLookup.tiles["water"]["BASE_COLOR"]
+                    material = "water"
                 elif height_value < -0.2:
-                    color = TileLookup.tiles["shallow_water"]["BASE_COLOR"]
+                    material = "shallow_water"
                 elif steepness_value > 0.1:
-                    color = TileLookup.tiles["stone"]["BASE_COLOR"]
+                    material = "stone"
                 elif height_value > 0.4:
-                    color = TileLookup.tiles["snow"]["BASE_COLOR"]
+                    material = "snow"
                 elif height_value > 0.35:
-                    color = TileLookup.tiles["stone"]["BASE_COLOR"]
+                    material = "stone"
                 elif height_value < -0.15:
-                    color = TileLookup.tiles["sand"]["BASE_COLOR"]
+                    material = "sand"
                 elif steepness_value > 0.08:
-                    color = TileLookup.tiles["dirt"]["BASE_COLOR"]
+                    material = "dirt"
                 else:
-                    color = TileLookup.tiles["grass"]["BASE_COLOR"]
+                    material = "grass"
+                color = TileLookup.tiles[material]["BASE_COLOR"]
 
                 # Water doesn't get shadows cause its flat.
                 if (
@@ -165,6 +166,6 @@ class Generation:
                 r, g, b = [int(i * 255) for i in ((normal_value + 1) / 2).clip(0, 1)]
                 normal_color = pygame.Color(r, g, b)
 
-                row.append(Tile(self, x, y, color))
+                row.append(Tile(self, x, y, color, material))
             tiles.append(row)
         return tiles

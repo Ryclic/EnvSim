@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, List
 import pygame
 from environment.generation import Generation
 from environment.tile import Tile
+from environment.animal import Animal
 
 if TYPE_CHECKING:
     from environment.world import World
@@ -18,11 +19,15 @@ class Chunk:
         self.surf = pygame.Surface((Chunk.SIZE, Chunk.SIZE)).convert()
         # Change to initialize_debug_tiles for debug tilemap
         self.tiles = self.initialize_random_tiles()
+        self.animals = [Animal(self.tiles[7][7], pygame.Color(255, 0, 0))]
 
     def tick(self, delta_time: float):
         for y in range(Chunk.SIZE):
             for x in range(Chunk.SIZE):
                 self.tiles[y][x].tick(delta_time)
+        
+        for animal in self.animals:
+            animal.tick(delta_time)
 
     def render(self, camera: "Camera"):
         if not camera.is_chunk_in_camera(self):
