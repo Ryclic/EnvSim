@@ -2,12 +2,10 @@ class Animal:
     """
     Generic base class for animal, used for implementation of other animals.
     """
-    def __init__(self, x: int = None, y: int = None):
+    def __init__(self, x: int, y: int, color: int):
         self.x = x
         self.y = y
-        if self.x or self.y == None:
-            self.place_random_tile(self)
-        pass
+        self.color = color
 
     def place_random_tile(self):
         pass

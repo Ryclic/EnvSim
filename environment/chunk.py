@@ -5,7 +5,7 @@ from environment.tile import Tile
 
 if TYPE_CHECKING:
     from environment.world import World
-    from rendering.camera import Camera
+    from environment.camera import Camera
 
 
 class Chunk:

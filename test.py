@@ -1,7 +1,7 @@
 import pygame
 from environment.world import World
-from rendering.camera import Camera
-from agent.animal import Animal
+from environment.camera import Camera
+from environment.animal import Animal
 
 pygame.init()
 pygame.surfarray.use_arraytype('numpy')

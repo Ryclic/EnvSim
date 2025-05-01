@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from environment.chunk import Chunk
-    from rendering.camera import Camera
+    from environment.camera import Camera
 
 
 class Tile:
