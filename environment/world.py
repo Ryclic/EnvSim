@@ -23,7 +23,7 @@ class World:
             self.size_tiles,
             self.size_tiles,
             3,
-            random.randint(0, 100),
+            random.randint(1, 100),
             2.4,
             0.5,
         )
