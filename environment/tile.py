@@ -27,5 +27,14 @@ class Tile:
     def render(self, camera: "Camera"):
         camera.render_tile_debug(self)
     
+    def get_neighbors(self):
+        world_x, world_y = self.get_world_x(), self.get_world_y()
+        neighbors = set()
+        for dy in range(-1, 1):
+            for dx in range(-1, 1):
+                if dx != 0 or dy != 0:
+                    neighbors.add(self.chunk.world.get_tile(world_x + dx, world_y + dy))
+        return neighbors
+    
     def update(self):
         self.chunk.update_surf(self.x, self.y, self.color)
