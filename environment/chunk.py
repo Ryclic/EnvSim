@@ -19,7 +19,7 @@ class Chunk:
         self.surf = pygame.Surface((Chunk.SIZE, Chunk.SIZE)).convert()
         # Change to initialize_debug_tiles for debug tilemap
         self.tiles = self.initialize_random_tiles()
-        self.animals = [Animal(self.tiles[7][7], pygame.Color(255, 0, 0))]
+        self.animals = []
 
     def tick(self, delta_time: float):
         for y in range(Chunk.SIZE):

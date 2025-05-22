@@ -30,11 +30,14 @@ class Tile:
     def get_neighbors(self):
         world_x, world_y = self.get_world_x(), self.get_world_y()
         neighbors = set()
-        for dy in range(-1, 1):
-            for dx in range(-1, 1):
-                if dx != 0 or dy != 0:
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                if (dx != 0 or dy != 0) and 0 <= world_x + dx < self.chunk.world.size_tiles and 0 <= world_y + dy < self.chunk.world.size_tiles:
                     neighbors.add(self.chunk.world.get_tile(world_x + dx, world_y + dy))
         return neighbors
     
     def update(self):
         self.chunk.update_surf(self.x, self.y, self.color)
+    
+    def __str__(self):
+        return f"Tile at ({self.get_world_x()}, {self.get_world_y()}) of type {self.material}"

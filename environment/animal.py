@@ -1,4 +1,5 @@
 import random
+import pygame
 import heapq
 
 class PathNode():
@@ -13,11 +14,11 @@ class PathNode():
         self.f_cost = self.g_cost + self.h_cost
     
     def get_distance(self, other):
-        return get_distance_to_coordinate(self, self.tile.get_world_x(), self.tile.get_world_y()):
+        return self.get_distance_to_coordinate(other.tile.get_world_x(), other.tile.get_world_y())
     
     def get_distance_to_coordinate(self, x, y):
-        dx = x - self.tile.get_world_x()
-        dy = y - self.tile.get_world.y()
+        dx = abs(x - self.tile.get_world_x())
+        dy = abs(y - self.tile.get_world_y())
 
         if dx > dy:
             return 14 * dy + 10 * (dx - dy)
@@ -36,8 +37,10 @@ class Animal:
         self.path = []
         self.unwalkable = {"water", "shallow_water", "snow", "stone"}
 
-        self.state = "wander"
+        self.state = "none"
         self.update()
+
+        path = self.get_path_to(67, 96)
     
     def update(self):
         self.tile.chunk.update_surf(self.tile.x, self.tile.y, self.color)
@@ -47,7 +50,7 @@ class Animal:
         node_lookup[self.tile] = PathNode(self.tile)
 
         open_nodes = [node_lookup[self.tile]]
-        heapq.heapify(open_tiles)
+        heapq.heapify(open_nodes)
         closed_tiles = set()
 
         while len(open_nodes):
@@ -56,21 +59,35 @@ class Animal:
             closed_tiles.add(current_node.tile)
 
             if current_node.tile.get_world_x() == world_x and current_node.tile.get_world_y() == world_y:
-                return
+                path = []
+                node = current_node
+                while node != None:
+                    path.append(node.tile)
+                    node = node.parent
+                for tile in path:
+                    tile.color = pygame.Color((0, 255, 0))
+                    tile.update()
+                return path
 
             for neighbor_tile in current_node.tile.get_neighbors():
                 if neighbor_tile.material in self.unwalkable or neighbor_tile in closed_tiles:
                     continue
                 
                 new_g_cost = current_node.g_cost + current_node.get_distance_to_coordinate(neighbor_tile.get_world_x(), neighbor_tile.get_world_y())
-                if neighbor_tile not in node_lookup or new_g_cost  < node_lookup[neighbor_tile].g_cost:
+                add_flag = False
+                if neighbor_tile not in node_lookup or new_g_cost < node_lookup[neighbor_tile].g_cost:
                     if (neighbor_tile not in node_lookup):
+                        add_flag = True
                         node_lookup[neighbor_tile] = PathNode(neighbor_tile)
+                        node_lookup[neighbor_tile].h_cost = node_lookup[neighbor_tile].get_distance_to_coordinate(world_x, world_y)
                     
                     node_lookup[neighbor_tile].g_cost = new_g_cost
-                    node_lookup[neighbor_tile].h_cost = node_lookup[neighbor_tile].get_distance_to_coordinate(world_x, world_y)
                     node_lookup[neighbor_tile].update_f_cost()
                     node_lookup[neighbor_tile].parent = current_node
+
+                    if (add_flag):
+                        heapq.heappush(open_nodes, node_lookup[neighbor_tile])        
+        return None
 
     def move(self, dx, dy):
         old_chunk = self.tile.chunk

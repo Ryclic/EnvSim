@@ -19,11 +19,14 @@ class World:
         self.surf = pygame.Surface((self.size_tiles, self.size_tiles)).convert()
 
         # Terrain Generation
+        self.seed = random.randint(1, 100)
+        self.seed = 32
+        print(self.seed)
         self.height_map = Generation.get_height_map(
             self.size_tiles,
             self.size_tiles,
             3,
-            random.randint(1, 100),
+            self.seed,
             2.4,
             0.5,
         )
@@ -36,6 +39,7 @@ class World:
             [-math.sqrt(3) / 3, math.sqrt(3) / 3, -math.sqrt(3) / 3]
         )
         self.chunks = self.initialize_chunks(world_size_chunks)
+        self.chunks[0][0].animals.append(Animal(self.chunks[0][0].tiles[7][7], pygame.Color(255, 0, 0)))
 
     def tick(self, delta_time: float):
         for y in range(self.size_chunks):
