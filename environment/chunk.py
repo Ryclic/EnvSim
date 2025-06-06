@@ -3,6 +3,7 @@ import pygame
 from environment.generation import Generation
 from environment.tile import Tile
 from environment.animal import Animal
+import random
 
 if TYPE_CHECKING:
     from environment.world import World
@@ -21,11 +22,22 @@ class Chunk:
         self.tiles = self.initialize_random_tiles()
         self.animals = []
 
+        self.animals.append(
+            Animal(
+                self.tiles[7][7],
+                pygame.Color(
+                    random.randint(100, 255),
+                    random.randint(100, 255),
+                    random.randint(100, 255),
+                ),
+            )
+        )
+
     def tick(self, delta_time: float):
         for y in range(Chunk.SIZE):
             for x in range(Chunk.SIZE):
                 self.tiles[y][x].tick(delta_time)
-        
+
         for animal in self.animals:
             animal.tick(delta_time)
 
@@ -51,6 +63,19 @@ class Chunk:
 
     def get_world_y(self) -> int:
         return self.y * self.SIZE
+
+    def get_neighbors(self):
+        chunk_x, chunk_y = self.x, self.y
+        neighbors = set()
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                if (
+                    (dx != 0 or dy != 0)
+                    and 0 <= chunk_x + dx < self.world.size_chunks
+                    and 0 <= chunk_y + dy < self.world.size_chunks
+                ):
+                    neighbors.add(self.world.chunks[chunk_y + dy][chunk_x + dx])
+        return neighbors
 
     def initialize_debug_tiles(self) -> "List[List[Tile]]":
         """

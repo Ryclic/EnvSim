@@ -39,7 +39,7 @@ class World:
             [-math.sqrt(3) / 3, math.sqrt(3) / 3, -math.sqrt(3) / 3]
         )
         self.chunks = self.initialize_chunks(world_size_chunks)
-        self.chunks[0][0].animals.append(Animal(self.chunks[0][0].tiles[7][7], pygame.Color(255, 0, 0)))
+        #self.chunks[0][0].animals.append(Animal(self.chunks[0][0].tiles[7][7], pygame.Color(255, 0, 0)))
 
     def tick(self, delta_time: float):
         for y in range(self.size_chunks):

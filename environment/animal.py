@@ -31,17 +31,26 @@ class Animal:
     """
     Generic base class for animal, used for implementation of other animals.
     """
-    def __init__(self, tile, color: int):
+    def __init__(self, tile, color):
         self.tile = tile
         self.color = color
         self.path = []
         self.unwalkable = {"water", "shallow_water", "snow", "stone"}
+        self.prey = {Animal}
+        self.target = None
+        self.removed = False
 
         self.state = "none"
         self.update()
 
-        path = self.get_path_to(67, 96)
+        #self.path = self.get_path_to(67, 96)
     
+    def get_distance(self, other):
+        dx = abs(other.tile.get_world_x() - self.tile.get_world_x())
+        dy = abs(other.tile.get_world_y() - self.tile.get_world_y())
+
+        return max(dx, dy)
+
     def update(self):
         self.tile.chunk.update_surf(self.tile.x, self.tile.y, self.color)
 
@@ -64,9 +73,9 @@ class Animal:
                 while node != None:
                     path.append(node.tile)
                     node = node.parent
-                for tile in path:
-                    tile.color = pygame.Color((0, 255, 0))
-                    tile.update()
+                path.pop()
+                #for tile in path:
+                #    tile.chunk.update_surf(tile.x, tile.y, pygame.Color(255, 255, 0))
                 return path
 
             for neighbor_tile in current_node.tile.get_neighbors():
@@ -87,7 +96,7 @@ class Animal:
 
                     if (add_flag):
                         heapq.heappush(open_nodes, node_lookup[neighbor_tile])        
-        return None
+        return []
 
     def move(self, dx, dy):
         old_chunk = self.tile.chunk
@@ -105,13 +114,65 @@ class Animal:
             self.tile.chunk.animals.append(self)
         self.update()
 
+    def remove(self):
+        self.tile.chunk.animals.remove(self)
+        self.tile.chunk.update_surf(self.tile.x, self.tile.y, self.tile.color)
+        self.removed = True
+        del self
+
+    def move_to(self, x, y):
+        self.move(x - self.tile.get_world_x(), y - self.tile.get_world_y())
+    
+    def move_to_tile(self, tile):
+        self.move_to(tile.get_world_x(), tile.get_world_y())
+
     def wander(self, chance=0.05):
         if random.random() < chance:
             self.move(random.randint(-1, 1), random.randint(-1, 1))
     
+    def follow(self, chance=0.01):
+        if random.random() < chance:
+            self.move_to_tile(self.path.pop())
+
+    def search(self):
+        nearest = None
+        shortest_distance = -1
+        neighbor_chunks = self.tile.chunk.get_neighbors()
+        for neighbor_chunk in neighbor_chunks:
+            for animal in neighbor_chunk.animals:
+                if type(animal) not in self.prey:
+                    pass
+                distance = self.get_distance(animal)
+                if shortest_distance == -1 or distance < shortest_distance:
+                    shortest_distance = distance
+                    nearest = animal
+        
+        if shortest_distance < 8:
+            return nearest
+    
     def tick(self, delta_time):
+        if self.target != None and self.target.removed:
+            self.target = None
+
+        if self.target != None and self.get_distance(self.target) <= 1:
+            self.target.remove()
+            self.target = None
+            self.state = "wander"
+        elif len(self.path) > 0:
+            self.state = "follow"
+        else:
+            if self.target == None:
+                self.target = self.search()
+
+            if self.target != None:
+                self.path = self.get_path_to(self.target.tile.get_world_x(), self.target.tile.get_world_y())
+            else:
+                self.state = "wander"
+
         if self.state == "idle":
             return
         elif self.state == "wander":
-            self.wander(0.2)
+            self.wander(0.05)
+        elif self.state == "follow":
+            self.follow(0.07)
 
