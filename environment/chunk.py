@@ -28,7 +28,13 @@ class Chunk:
             )
             if random.random() < 0.5 else
             Rabbit(
-                self.tiles[0][0],
+                self.tiles[7][7],
+            )
+        )
+
+        self.animals.append(
+            Rabbit(
+                self.tiles[2][2],
             )
         )
 
