@@ -1,6 +1,7 @@
 import random
 import pygame
 import heapq
+from concurrent.futures import ThreadPoolExecutor
 
 class PathNode():
     def __init__(self, tile, g_cost=0, h_cost=0, parent=None):
@@ -31,12 +32,26 @@ class Animal:
     """
     Generic base class for animal, used for implementation of other animals.
     """
-    def __init__(self, tile, color):
+
+    pathfinding_executor = ThreadPoolExecutor(max_workers=3)
+
+    def __init__(
+        self,
+        tile,
+        color=pygame.Color(
+            random.randint(100, 255),
+            random.randint(100, 255),
+            random.randint(100, 255),
+        ),
+        prey={},
+        unwalkable={"water", "shallow_water", "snow", "stone"},
+    ):
         self.tile = tile
         self.color = color
         self.path = []
-        self.unwalkable = {"water", "shallow_water", "snow", "stone"}
-        self.prey = {Animal}
+        self.path_future = None
+        self.unwalkable = unwalkable
+        self.prey = prey
         self.target = None
         self.removed = False
 
@@ -131,28 +146,40 @@ class Animal:
             self.move(random.randint(-1, 1), random.randint(-1, 1))
     
     def follow(self, chance=0.01):
-        if random.random() < chance:
+        if random.random() < chance and len(self.path) > 0:
             self.move_to_tile(self.path.pop())
 
     def search(self):
+        if len(self.prey) <= 0:
+            return None
+
         nearest = None
         shortest_distance = -1
         neighbor_chunks = self.tile.chunk.get_neighbors()
         for neighbor_chunk in neighbor_chunks:
             for animal in neighbor_chunk.animals:
-                if type(animal) not in self.prey:
+                if not isinstance(self, tuple(self.prey)):
                     pass
                 distance = self.get_distance(animal)
                 if shortest_distance == -1 or distance < shortest_distance:
                     shortest_distance = distance
-                    nearest = animal
+                    nearest = animal 
         
-        if shortest_distance < 8:
+        if shortest_distance < 12:
             return nearest
+        return None
     
     def tick(self, delta_time):
+        if self.tile.material in self.unwalkable:
+            self.remove()
+            return
+
         if self.target != None and self.target.removed:
             self.target = None
+
+        if self.path_future and self.path_future.done():
+            self.path = self.path_future.result()
+            self.path_future = None
 
         if self.target != None and self.get_distance(self.target) <= 1:
             self.target.remove()
@@ -161,11 +188,10 @@ class Animal:
         elif len(self.path) > 0:
             self.state = "follow"
         else:
-            if self.target == None:
+            if self.target is None:
                 self.target = self.search()
-
-            if self.target != None:
-                self.path = self.get_path_to(self.target.tile.get_world_x(), self.target.tile.get_world_y())
+            if self.target != None and self.path_future is None:
+                self.path_future = Animal.pathfinding_executor.submit(self.get_path_to, self.target.tile.get_world_x(), self.target.tile.get_world_y())
             else:
                 self.state = "wander"
 
@@ -176,3 +202,10 @@ class Animal:
         elif self.state == "follow":
             self.follow(0.07)
 
+class Fox(Animal):
+    def __init__(self, tile):
+        super().__init__(tile, color=pygame.Color(196, 110, 43), prey={Rabbit})
+
+class Rabbit(Animal):
+    def __init__(self, tile):
+        super().__init__(tile, color=pygame.Color(204, 186, 163))

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, List
 import pygame
 from environment.generation import Generation
 from environment.tile import Tile
-from environment.animal import Animal
+from environment.animal import Animal, Fox, Rabbit
 import random
 
 if TYPE_CHECKING:
@@ -23,13 +23,12 @@ class Chunk:
         self.animals = []
 
         self.animals.append(
-            Animal(
+            Fox(
                 self.tiles[7][7],
-                pygame.Color(
-                    random.randint(100, 255),
-                    random.randint(100, 255),
-                    random.randint(100, 255),
-                ),
+            )
+            if random.random() < 0.5 else
+            Rabbit(
+                self.tiles[0][0],
             )
         )
 
