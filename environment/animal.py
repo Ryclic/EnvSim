@@ -40,7 +40,7 @@ class Animal:
     """
 
     count = 0
-    pathfinding_executor = ThreadPoolExecutor(max_workers=3)
+    pathfinding_executor = ThreadPoolExecutor(max_workers=2)
 
     def __init__(
         self,
@@ -52,6 +52,7 @@ class Animal:
         ),
         prey={},
         unwalkable={"water", "shallow_water", "snow", "stone"},
+        age=random.randint(20, 80)
     ):
         self.tile = tile
         self.color = color
@@ -62,7 +63,8 @@ class Animal:
         self.target = None
         self.removed = False
         self.max_hunger = 100
-        self.hunger = self.max_hunger / 2
+        self.hunger = self.max_hunger * 0.8
+        self.age = age
 
         self.movement_state = "none"  # "wander", "follow", "none"
         self.goal_state = "none"  # "reproduce", "hunt", "none"
@@ -196,7 +198,7 @@ class Animal:
                     shortest_distance = distance
                     nearest = animal
 
-        if shortest_distance < 12:
+        if shortest_distance < 14:
             return nearest
 
     def update_hunger(self, chance=0.02):
@@ -207,9 +209,19 @@ class Animal:
 
         if random.random() < chance:
             self.hunger -= 1
+    
+    def update_lifetime(self, chance=0.01):
+        if self.age >= 100:
+            self.remove()
+            print("Aged")
+            return
+
+        if random.random() < chance:
+            self.age > 0
 
     def tick(self, delta_time):
         self.update_hunger()
+        self.update_lifetime()
 
         if self.tile.material in self.unwalkable:
             self.remove()
@@ -230,14 +242,15 @@ class Animal:
             if self.goal_state == "hunt":
                 self.target.remove()
                 self.target = None
-                self.hunger += 60
+                self.hunger += 70
                 self.hunger = min(self.hunger, self.max_hunger)
                 self.movement_state = "wander"
+                self.goal_state = "none"
                 print("Hunted")
             elif self.goal_state == "reproduce":
                 self.target = None
                 self.hunger -= 30
-                self.tile.chunk.animals.append(type(self)(self.tile))
+                self.tile.chunk.animals.append(type(self)(self.tile, age=0))
                 self.goal_state = "none"
                 self.movement_state = "wander"
                 print("Reproduced")
@@ -270,8 +283,8 @@ class Animal:
 class Fox(Animal):
     count = 0
 
-    def __init__(self, tile):
-        super().__init__(tile, color=pygame.Color(196, 110, 43), prey={Rabbit})
+    def __init__(self, tile, age=random.randint(20, 80)):
+        super().__init__(tile, color=pygame.Color(196, 110, 43), prey={Rabbit}, age=age)
         Fox.count += 1
 
     def remove(self):
@@ -280,19 +293,18 @@ class Fox(Animal):
 
     def tick(self, delta_time):
         super().tick(delta_time)
-        if self.hunger < 40:
+        if self.hunger < 60:
             self.goal_state = "hunt"
-        elif self.hunger > 80:
+        elif  20 < self.age < 60 and self.hunger > 90:
             self.goal_state = "reproduce"
         else:
             self.goal_state = "none"
 
-
 class Rabbit(Animal):
     count = 0
 
-    def __init__(self, tile):
-        super().__init__(tile, color=pygame.Color(204, 186, 163))
+    def __init__(self, tile, age=random.randint(20, 80)):
+        super().__init__(tile, color=pygame.Color(204, 186, 163), age=age)
         Rabbit.count += 1
 
     def remove(self):
@@ -304,7 +316,8 @@ class Rabbit(Animal):
         if self.tile.material == "grass" and random.random() < 0.06 - 0.0008 * Rabbit.count:
             self.hunger += 1
             self.hunger = min(self.hunger, self.max_hunger)
-            if self.hunger > 60:
-                self.goal_state = "reproduce"
-            else:
-                self.goal_state = "none"
+
+        if self.hunger > 85 and 20 < self.age < 60:
+            self.goal_state = "reproduce"
+        else:
+            self.goal_state = "none"

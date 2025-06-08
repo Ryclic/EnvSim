@@ -22,21 +22,16 @@ class Chunk:
         self.tiles = self.initialize_random_tiles()
         self.animals = []
 
-        self.animals.append(
-            Fox(
-                self.tiles[7][7],
+        for x in (2, 12):
+            self.animals.append(
+                Fox(
+                    self.tiles[x][x],
+                )
+                if random.random() < 0.2 else
+                Rabbit(
+                    self.tiles[x][x],
+                )
             )
-            if random.random() < 0.5 else
-            Rabbit(
-                self.tiles[7][7],
-            )
-        )
-
-        self.animals.append(
-            Rabbit(
-                self.tiles[2][2],
-            )
-        )
 
     def tick(self, delta_time: float):
         for y in range(Chunk.SIZE):
